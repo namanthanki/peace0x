@@ -8,20 +8,29 @@
 ----Definitions||
 ****************/
 
-#define NAME "peace0x 1.0"
+#define NAME "peace0x 1.1"
 
-#define DEBUG
 #ifndef DEBUG
 #define ASSERT(n)
 #else
-#define ASSERT(n) \
-if(!(n)) { \
-printf("%s - Failed ", #n); \
-printf("On %s ", __DATE__); \
-printf("At %s ", __TIME__); \
-printf("In File %s ", __FILE__); \
-printf("At Line %s ", __LINE__); \
-exit(1);}
+// #define ASSERT(n) \
+// if(!(n)) { \
+// printf("%s - Failed ", #n); \
+// printf("On %s ", __DATE__); \
+// printf("At %s ", __TIME__); \
+// printf("In File %s ", __FILE__); \
+// printf("At Line %d ", __LINE__); \
+// exit(1);}
+
+#define ASSERT(__x) do {                            \
+        int result = (__x);                         \
+        const char __name[] = #__x;                 \
+        if(!result) {                               \
+            fprintf(stderr,                         \
+                "%s:%d %s: failed with %d\n",       \
+                __FILE__, __LINE__, __name, result);\
+        }                                           \
+    } while(0)
 #endif
 
 #define SQUARE_NUMBER 120 // Defining maximum squares in an array

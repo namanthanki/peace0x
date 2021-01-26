@@ -1,0 +1,5 @@
+peace0x
+*.exe
+*.o
+*.d
+.deps
