@@ -1,4 +1,5 @@
-#include "definitions.h"
+#include <definitions.h>
+#include <validate.h>
 
 #define HASH_PIECE(piece, square) (position -> hashKey ^= (pieceKeys[(piece)][(square)]))
 #define HASH_CASTLE_PERMISSION (position -> hashKey ^= (castleKey[(position -> castlePermission)]))

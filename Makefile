@@ -23,7 +23,7 @@ LD=gcc
 CFLAGS=-fPIC  # fPIC makes code position-independent
 CFLAGS_DEBUG=-g
 CDEFS=-DDEBUG
-INCLUDES=-I.
+INCLUDES=-I. -Iinclude
 LIBS=
 LDFLAGS=
 RM=rm -f
@@ -36,10 +36,16 @@ $(EXE): $(OBJ)
 %.o: %.c
 	$(CC) $(CDEFS) $(CFLAGS) $(CFLAGS_DEBUG) $(INCLUDES) -c $< -o $@
 
+
 clean:
-	$(RM) $(OBJ) $(EXE)
+	$(RM) $(OBJ) $(EXE) .deps
+
+
+deps: .deps
 
 .deps:
 	$(CC) -E -M $(CDEFS) $(INCLUDES) $(SRC) > $@
 
 include .deps
+
+.PHONY: deps clean

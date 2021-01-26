@@ -1,4 +1,5 @@
-#include "definitions.h"
+#include <definitions.h>
+#include <validate.h>
 
 #define MOVE(fr, to, capd, prom, flrnk) ((fr) | ((to) << 7) | ((capd) << 14) | ((prom) << 20) | (flrnk))
 #define squareOffboard(square) (filesBoard[(square)] == OFFBOARD) 

@@ -1,4 +1,5 @@
-#include "definitions.h"
+#include <definitions.h>
+#include <validate.h>
 
 const int knightDirection[8] = { -8, -19, -21, -12, 8, 19, 21, 12 };
 const int rookDirection[4] = { -1, -10, 1, 10 };

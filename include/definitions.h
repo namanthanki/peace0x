@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #ifndef DEFINITONS_H
 #define DEFINITONS_H
@@ -22,13 +23,29 @@
 // printf("At Line %d ", __LINE__); \
 // exit(1);}
 
+#define _ASSERT_TRACE_STR "%s:%d %s: failed with %d\n"
+#define _STRINGIFY(__foo)  # __foo
+
+#define ASSERT_EQ(__a, __b) {                                   \
+    const __typeof__(__a) _x = __a;                             \
+    const __typeof__(__b) _y = __b;                             \
+    const bool __result = _x != _y;                             \
+    const char __what[] = _STRINGIFY(__a) _STRINGIFY(__b);      \
+    if(__result) {                                              \
+        fprintf(stderr, _ASSERT_TRACE_STR,                      \
+                __FILE__, __LINE__, __what, __result);          \
+        exit(-127);                                             \
+    }                                                           \
+}
+
 #define ASSERT(__x) do {                            \
-        int result = (__x);                         \
+        __typeof__(__x) result = (__x);             \
         const char __name[] = #__x;                 \
         if(!result) {                               \
             fprintf(stderr,                         \
                 "%s:%d %s: failed with %d\n",       \
                 __FILE__, __LINE__, __name, result);\
+            exit(-127);                             \
         }                                           \
     } while(0)
 #endif
@@ -256,15 +273,7 @@ extern char *printMove(const int move);
 extern char *printSquareString(const int square);
 void printMoveList(const movelist *list);
 
-/*************||
-----validate.c||
-***************/
 
-extern int squareOnBoard(const int square);
-extern int boardSideValid(const int boardSide);
-extern int fileRankValid(const int fileRank);
-extern int pieceValidateEmpty(const int piece);
-extern int pieceValidate(const int piece);
 
 /************||
 ----movegen.c||
