@@ -203,7 +203,7 @@ void generateAllMoves(const board *position, movelist *list) {
             }
         }
 
-        if(position -> castlePermission & wQueenSideCastle) {
+        if(position -> castlePermission & bQueenSideCastle) {
             if(position -> pieces[D8] == EMPTY_SQR && position -> pieces[C8] == EMPTY_SQR && position -> pieces[B8] == EMPTY_SQR) {
                 if(!isSquareAttacked(E8, WHITE, position) && !isSquareAttacked(D8, WHITE, position)) {
                     addQuietMove(position, MOVE(E8, C8, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_CASTLED), list);
