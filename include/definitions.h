@@ -43,7 +43,7 @@
         const char __name[] = #__x;                 \
         if(!result) {                               \
             fprintf(stderr,                         \
-                "%s:%d %s: failed with %d\n",       \
+                "%s: %d %s: failed with %d\n",       \
                 __FILE__, __LINE__, __name, result);\
             exit(-127);                             \
         }                                           \
