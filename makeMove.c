@@ -131,6 +131,8 @@ int makeMove(board *position, int move) {
     int to = TOSQ(move);
     int side = position -> boardSide;
 
+    // printf("FROM SQUARE: %d\n\n", from);
+
     ASSERT(squareOnBoard(from));
     ASSERT(squareOnBoard(to));
     ASSERT(boardSideValid(side));
