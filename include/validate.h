@@ -2,20 +2,9 @@
 #define VALIDATE_H
 
 #include <stdbool.h>
-
-// static inline bool squareOnBoard(const int square) {
-
-// }
-// extern int boardSideValid(const int boardSide);
-// extern int fileRankValid(const int fileRank);
-// extern int pieceValidateEmpty(const int piece);
-// extern int pieceValidate(const int piece);
-
-
 #include "definitions.h"
 
 static inline bool squareOnBoard(const int square) {
-    // return filesBoard[square] == OFFBOARD ? FALSE : TRUE;
 	return filesBoard[square] != OFFBOARD;
 }
 
