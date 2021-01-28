@@ -35,6 +35,23 @@ const int numberOfDirections[13] = {
     0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8
 };
 
+int moveExists(board *position, const int move) {
+    movelist newList[1];
+    generateAllMoves(position, newList);
+    
+    int moveNumber = 0;
+    for(moveNumber = 0; moveNumber < newList -> numberOfMoves; moveNumber++) {
+        if(!makeMove(position, newList -> moves[moveNumber].move)) {
+            continue;
+        }
+        takeMove(position);
+        if(newList -> moves[moveNumber].move == move) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 static void addQuietMove(const board *position, int move, movelist *list) {
     list -> moves[list -> numberOfMoves].move = move;
     list -> moves[list -> numberOfMoves].score = 0;
