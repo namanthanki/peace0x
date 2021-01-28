@@ -271,6 +271,8 @@ void resetBoard(board *position) {
     position -> historyPly = 0;
     position -> castlePermission = 0;
     position -> hashKey = 0ULL;
+
+    initPvTable(position -> newPvTable);
 }
 
 void printBoard(const board *position) {
