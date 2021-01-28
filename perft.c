@@ -32,6 +32,7 @@ void perftTest(int depth, board *position) {
     printf("\nStarting Test to Depth: %d\n", depth);
 
     leafNodes = 0;
+    int start = getTimeInMiliseconds();
 
     movelist newList[1];
     generateAllMoves(position, newList);
@@ -50,6 +51,6 @@ void perftTest(int depth, board *position) {
         long oldNodes = leafNodes - cumNodes;
         printf("Move %d: %s : %ld\n", moveNum + 1, printMove(move), oldNodes);
     }
-    printf("\nTest Complete: %ld Nodes Visited\n", leafNodes);
+    printf("\nTest Complete: %ld Nodes Visited in %dms\n", leafNodes, getTimeInMiliseconds() - start);
     return;
 }
