@@ -9,7 +9,8 @@
 # 	movegen.c 	\
 # 	validate.c 	\
 # 	makeMove.c 	\
-# 	perft.c
+# 	perft.c		\
+#	search.c	
 	
 SRC=$(wildcard *.c)
 OBJ=$(SRC:%.c=%.o)
