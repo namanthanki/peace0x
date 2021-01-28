@@ -53,6 +53,7 @@
 #define SQUARE_NUMBER 120 // Defining maximum squares in an array
 #define MAXGAMEMOVES 2048 // Defining maximum number of half moves of a game, 1024 moves
 #define MAXPOSITIONMOVES 256 // Defining Maximum number of moves expected in a game
+#define MAXDEPTH 64 // Defining maximum depth that movegenerator can reach 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 /************************||
@@ -113,15 +114,25 @@ enum { FALSE, TRUE };
 ----Structures||
 ***************/
 
-typedef struct s_Move{
+typedef struct s_Move {
     int move;
     int score;
 } s_move;
 
-typedef struct s_MoveList{
+typedef struct s_MoveList {
     s_move moves[MAXPOSITIONMOVES];
     int numberOfMoves;
 } movelist;
+
+typedef struct s_Pventry {
+    U64Int hashKey;
+    int move;
+} pvEntry;
+
+typedef struct s_Pvtable {
+    pvEntry *pTable;
+    int numberOfEntries;
+}   pvTable;
 
 typedef struct s_Undo{
     int move;
@@ -132,7 +143,7 @@ typedef struct s_Undo{
     U64Int hashKey;
 } undo;
 
-typedef struct s_Board{
+typedef struct s_Board {
     int pieces[SQUARE_NUMBER];
     int numberOfPieces[13];
     int bigPieces[2];
@@ -141,6 +152,7 @@ typedef struct s_Board{
     int material[2];
     int kingSquare[2];
     int pieceList[13][10]; 
+    int pvArray[MAXDEPTH];
     
     int boardSide;
     int isEnPassant;
@@ -154,6 +166,9 @@ typedef struct s_Board{
     U64Int hashKey;
 
     undo history[MAXGAMEMOVES];
+
+    pvTable newPvTable[1];
+
 } board;
 
 /************||
@@ -171,6 +186,8 @@ typedef struct s_Board{
 
 #define MOVEFLAG_CAPTURED 0x7c000
 #define MOVEFLAG_PROMOTION 0xf00000
+
+#define NOMOVE 0
 
 /*********||
 ----Macros||
@@ -271,15 +288,15 @@ extern int isSquareAttacked(const int square, const int boardSide, const board *
 
 extern char *printMove(const int move);
 extern char *printSquareString(const int square);
-void printMoveList(const movelist *list);
-
-
+extern void printMoveList(const movelist *list);
+extern int parseMove(char *ptrChar, board *position);
 
 /************||
 ----movegen.c||
 **************/
 
 extern void generateAllMoves(const board *position, movelist *list);
+extern int moveExists(board *position, const int move);
 
 /*************||
 ----makeMove.c||
@@ -293,5 +310,25 @@ extern void takeMove(board *position);
 ************/
 
 extern void perftTest(int depth, board *position);
+
+/***********||
+----search.c||
+*************/
+
+extern void searchPosition(board *position);
+
+/**********||
+----utils.c||
+************/
+
+extern int getTimeInMiliseconds();
+
+/************||
+----pvtable.c||
+**************/
+
+extern void initPvTable(pvTable *table);
+extern void storePvMove(const board *position, const int move);
+extern int probePvTable(const board *position);
 
 #endif
