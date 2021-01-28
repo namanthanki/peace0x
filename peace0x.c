@@ -23,7 +23,7 @@
 #define CASTLE2 "3rk2r/8/8/8/8/8/6p1/R3K2R b KQk - 0 1"
 #define TRICKYCASTLE "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
 #define GOODTESTPOSITION "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
-#define DISCOVERPROMOTIONBUGS "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1"
+#define DISCOVERPROMOTIONBUGS "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N w - - 0 1"
 
 /*******||
 ----Main||
@@ -35,8 +35,38 @@ int main(void) {
     board newBoard[1];
     movelist newList[1];
 
-    parseFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", newBoard);
-    perftTest(5, newBoard);
+    parseFEN(START_FEN, newBoard);
 
+    char input[6];
+    int move = NOMOVE;
+    int pvNumber = 0;
+    int max = 0;
+
+    while(TRUE) {
+        printBoard(newBoard);
+        printf("Please Enter a Move: ");
+        fgets(input, 6, stdin);
+
+        if(input[0] == 'q') {
+            break;
+        }else if(input[0] == 't') {
+            takeMove(newBoard);
+        }else if(input[0] == 'p') {
+            perftTest(4, newBoard);
+        }else {
+            move = parseMove(input, newBoard);
+            if(move != NOMOVE) {
+                storePvMove( != NOMOVE);
+                makeMove(newBoard, move);
+                // if(isRepetition(newBoard)) {
+                //     printf("Repetition Seen\n");
+                // }
+            }else {
+                printf("Move has not been parsed: %s\n", input);
+            }
+        }
+ 
+        fflush(stdin);
+    }
     return 0;
 }
