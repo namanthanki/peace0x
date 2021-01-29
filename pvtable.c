@@ -1,4 +1,4 @@
-#include "definitions.h"
+#include "include/definitions.h"
 
 const int pvSize = 0x100000 * 2;
 
@@ -21,7 +21,7 @@ int getPvLine(const int depth, board *position) {
         move = probePvTable(position);   
     }
 
-    while(position -> historyPly > 0) {
+    while(position -> ply > 0) {
         takeMove(position);
     }
     return numOfMovesinArr;
@@ -29,7 +29,7 @@ int getPvLine(const int depth, board *position) {
 
 void clearPvTable(pvTable *table) {
     pvEntry *p_pvEntry;
-    for(p_pvEntry = table -> pTable; p_pvEntry <= table -> pTable + table -> numberOfEntries; p_pvEntry++) {
+    for(p_pvEntry = table -> pTable; p_pvEntry < table -> pTable + table -> numberOfEntries; p_pvEntry++) {
         p_pvEntry -> hashKey = 0ULL;
         p_pvEntry -> move = NOMOVE;
     }
@@ -38,7 +38,9 @@ void clearPvTable(pvTable *table) {
 void initPvTable(pvTable *table) {
     table -> numberOfEntries = pvSize / sizeof(pvEntry);
     table -> numberOfEntries -= 2;
-    free(table -> pTable);
+    if (table->pTable != NULL) {
+        free(table->pTable);
+    }
     table -> pTable = (pvEntry *) malloc(table -> numberOfEntries * sizeof(pvEntry));
     clearPvTable(table);
     printf("pvTable init complete with %d entries\n", table -> numberOfEntries);
@@ -53,7 +55,7 @@ void storePvMove(const board *position, const int move) {
 }
 
 int probePvTable(const board *position) {
-    int index = position -> hashKey & position -> newPvTable -> numberOfEntries; 
+    int index = position -> hashKey  % position -> newPvTable -> numberOfEntries; 
     ASSERT(index >= 0 && index <= position -> newPvTable -> numberOfEntries - 1);
 
     if(position -> newPvTable -> pTable[index].hashKey == position -> hashKey) {
