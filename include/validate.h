@@ -2,7 +2,7 @@
 #define VALIDATE_H
 
 #include <stdbool.h>
-#include <definitions.h>
+#include "definitions.h"
 
 static inline bool squareOnBoard(const int square) {
 	return filesBoard[square] != OFFBOARD;

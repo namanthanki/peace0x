@@ -1,4 +1,4 @@
-#include "definitions.h"
+#include "include/definitions.h"
 
 char pieceChar[] = ".PNBRQKpnbrqk";
 char sideChar[] = "wb-";

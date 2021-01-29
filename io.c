@@ -1,5 +1,5 @@
-#include "definitions.h" 
-#include "validate.h"
+#include "include/definitions.h" 
+#include "include/validate.h"
 
 char *printSquareString(const int square) {
     static char squareString[3];

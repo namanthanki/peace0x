@@ -1,4 +1,4 @@
-#include "definitions.h"
+#include "include/definitions.h"
 
 #define RAND_64 ((U64Int) rand() | \
                 (U64Int) rand() << 15 | \
@@ -30,7 +30,7 @@ void initFilesRanksBoard() {
         filesBoard[index] = OFFBOARD;
         ranksBoard[index] = OFFBOARD;
     }
-    
+
     for(rank = RANK_1; rank <= RANK_8; rank++) {
         for(file = FILE_A; file <= FILE_H; file++) {
             square = FILE_RANK_TO_SQUARE(file, rank);

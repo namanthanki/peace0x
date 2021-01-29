@@ -1,4 +1,4 @@
-#include "definitions.h"
+#include "include/definitions.h"
 
 #ifdef WIN32
 #include <windows.h>

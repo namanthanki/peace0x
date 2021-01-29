@@ -1,4 +1,4 @@
-#include "definitions.h"
+#include "include/definitions.h"
 
 U64Int generateHashKey(const board *position) {
     int square = 0;
