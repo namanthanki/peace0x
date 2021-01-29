@@ -1,4 +1,4 @@
-#include "definitions.h"
+#include "include/definitions.h"
 
 int checkBoard(const board *position) {
     int tmpNumberOfPieces[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -272,6 +272,7 @@ void resetBoard(board *position) {
     position -> castlePermission = 0;
     position -> hashKey = 0ULL;
 
+    position -> newPvTable -> pTable = NULL;
     initPvTable(position -> newPvTable);
 }
 
