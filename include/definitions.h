@@ -132,7 +132,7 @@ typedef struct s_Pventry {
 typedef struct s_Pvtable {
     pvEntry *pTable;
     int numberOfEntries;
-}   pvTable;
+} pvTable;
 
 typedef struct s_Undo{
     int move;
@@ -153,6 +153,8 @@ typedef struct s_Board {
     int kingSquare[2];
     int pieceList[13][10]; 
     int pvArray[MAXDEPTH];
+    int searchHistory[13][SQUARE_NUMBER];
+    int searchKillers[2][MAXDEPTH];
     
     int boardSide;
     int isEnPassant;
@@ -170,6 +172,23 @@ typedef struct s_Board {
     pvTable newPvTable[1];
 
 } board;
+
+typedef struct s_SearchInfo {
+    int startTime;
+    int stopTime;
+    int depth;
+    int depthSet;
+    int timeSet;
+    int quit;
+    int stopped;
+    int movesToGo;
+    int infinite;
+
+    long nodes;
+
+    float failHigh; 
+    float failHighFirst;
+} searchInfo;
 
 /************||
 ----Game Move||
@@ -315,7 +334,7 @@ extern void perftTest(int depth, board *position);
 ----search.c||
 *************/
 
-extern void searchPosition(board *position);
+extern void searchPosition(board *position, searchInfo *info);
 
 /**********||
 ----utils.c||
@@ -330,5 +349,13 @@ extern int getTimeInMiliseconds();
 extern void initPvTable(pvTable *table);
 extern void storePvMove(const board *position, const int move);
 extern int probePvTable(const board *position);
+extern int getPvLine(const int depth, board *position);
+extern void clearPvTable(pvTable *table);
+
+/************||
+----pvtable.c||
+**************/
+
+extern int evaluatePosition(const board *position);
 
 #endif
