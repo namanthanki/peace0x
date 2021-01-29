@@ -6,7 +6,7 @@
 ----Header Files||
 *****************/
 
-#include "definitions.h"
+#include "include/definitions.h"
 
 #define FEN1 "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
 #define FEN2 "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
@@ -34,6 +34,7 @@ int main(void) {
 
     board newBoard[1];
     movelist newList[1];
+    searchInfo info[1];
 
     parseFEN(START_FEN, newBoard);
 
@@ -51,16 +52,14 @@ int main(void) {
             break;
         }else if(input[0] == 't') {
             takeMove(newBoard);
-        }else if(input[0] == 'p') {
-            perftTest(4, newBoard);
+        }else if(input[0] == 's') {
+            info -> depth = 4;
+            searchPosition(newBoard, info);
         }else {
             move = parseMove(input, newBoard);
             if(move != NOMOVE) {
-                storePvMove( != NOMOVE);
+                storePvMove(newBoard, move);
                 makeMove(newBoard, move);
-                // if(isRepetition(newBoard)) {
-                //     printf("Repetition Seen\n");
-                // }
             }else {
                 printf("Move has not been parsed: %s\n", input);
             }
