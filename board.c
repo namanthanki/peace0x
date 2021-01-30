@@ -271,9 +271,12 @@ void resetBoard(board *position) {
     position -> historyPly = 0;
     position -> castlePermission = 0;
     position -> hashKey = 0ULL;
+}
 
-    position -> newPvTable -> pTable = NULL;
-    initPvTable(position -> newPvTable);
+board* generateBoard() {
+    board* newBoard = (board *) malloc(sizeof(board));
+    newBoard -> newPvTable -> pTable = NULL;
+    return newBoard;
 }
 
 void printBoard(const board *position) {
