@@ -283,7 +283,7 @@ void generateAllMoves(const board *position, movelist *list) {
 
                 while(!squareOffboard(targetSquare)) {
                     if(position -> pieces[targetSquare] != EMPTY_SQR) {
-                        if(pieceColor[position -> pieces[targetSquare]] == boardSide ^ 1) {
+                        if(pieceColor[position -> pieces[targetSquare]] == (boardSide ^ 1)) {
                             addCapturedMove(position, MOVE(square, targetSquare, position -> pieces[targetSquare], EMPTY_SQR, 0), list);
                         }
                         break;
@@ -316,7 +316,7 @@ void generateAllMoves(const board *position, movelist *list) {
                 }
 
                 if(position -> pieces[targetSquare] != EMPTY_SQR) {
-                    if(pieceColor[position -> pieces[targetSquare]] == boardSide ^ 1) {
+                    if(pieceColor[position -> pieces[targetSquare]] == (boardSide ^ 1)) {
                         addCapturedMove(position, MOVE(square, targetSquare, position -> pieces[targetSquare], EMPTY_SQR, 0), list);
                     }
                     continue;
@@ -405,7 +405,7 @@ void generateAllCaptures(const board* position, movelist* list) {
 
                 while (!squareOffboard(targetSquare)) {
                     if (position->pieces[targetSquare] != EMPTY_SQR) {
-                        if (pieceColor[position->pieces[targetSquare]] == boardSide ^ 1) {
+                        if (pieceColor[position->pieces[targetSquare]] == (boardSide ^ 1)) {
                             addCapturedMove(position, MOVE(square, targetSquare, position->pieces[targetSquare], EMPTY_SQR, 0), list);
                         }
                         break;
@@ -437,7 +437,7 @@ void generateAllCaptures(const board* position, movelist* list) {
                 }
 
                 if (position->pieces[targetSquare] != EMPTY_SQR) {
-                    if (pieceColor[position->pieces[targetSquare]] == boardSide ^ 1) {
+                    if (pieceColor[position->pieces[targetSquare]] == (boardSide ^ 1)) {
                         addCapturedMove(position, MOVE(square, targetSquare, position->pieces[targetSquare], EMPTY_SQR, 0), list);
                     }
                     continue;

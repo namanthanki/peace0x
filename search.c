@@ -262,5 +262,5 @@ void searchPosition(board *position, searchInfo *info) {
         //printf("Ordering: %.2f\n", (info -> failHighFirst / info -> failHigh));
     }
 
-    printf("Best move: %s\n", printMove(bestMove));
+    printf("bestmove %s\n", printMove(bestMove));
 }
