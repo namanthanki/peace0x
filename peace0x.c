@@ -24,6 +24,7 @@
 #define TRICKYCASTLE "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
 #define GOODTESTPOSITION "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
 #define DISCOVERPROMOTIONBUGS "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N w - - 0 1"
+#define WAC1 "r1b1k2r/ppppnppp/2n2q2/2b5/3NP3/2P1B3/PP3PPP/RN1QKB1R w KQkq - 0 1"
 
 /*******||
 ----Main||
@@ -31,41 +32,6 @@
 
 int main(void) {
     allInit();
-
-    board newBoard[1];
-    movelist newList[1];
-    searchInfo info[1];
-
-    parseFEN(START_FEN, newBoard);
-
-    char input[6];
-    int move = NOMOVE;
-    int pvNumber = 0;
-    int max = 0;
-
-    while(TRUE) {
-        printBoard(newBoard);
-        printf("Please Enter a Move: ");
-        fgets(input, 6, stdin);
-
-        if(input[0] == 'q') {
-            break;
-        }else if(input[0] == 't') {
-            takeMove(newBoard);
-        }else if(input[0] == 's') {
-            info -> depth = 4;
-            searchPosition(newBoard, info);
-        }else {
-            move = parseMove(input, newBoard);
-            if(move != NOMOVE) {
-                storePvMove(newBoard, move);
-                makeMove(newBoard, move);
-            }else {
-                printf("Move has not been parsed: %s\n", input);
-            }
-        }
- 
-        fflush(stdin);
-    }
+    uciLoop();
     return 0;
 }
