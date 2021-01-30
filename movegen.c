@@ -35,6 +35,23 @@ const int numberOfDirections[13] = {
     0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8
 };
 
+const int victimScore[13] = { 
+    0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600
+};
+
+static int MVV_LVA_Scores[13][13];
+
+void init_MVV_LVA() {
+    int attacker;
+    int victim;
+
+    for (attacker = whitePwn; attacker <= blackKing; attacker++) {
+        for (victim = whitePwn; victim <= blackKing; victim++) {
+            MVV_LVA_Scores[victim][attacker] = victimScore[victim] + 6 - (victimScore[attacker] / 100);
+        }
+    }
+}
+
 int moveExists(board *position, const int move) {
     movelist newList[1];
     generateAllMoves(position, newList);
@@ -53,20 +70,36 @@ int moveExists(board *position, const int move) {
 }
 
 static void addQuietMove(const board *position, int move, movelist *list) {
+    ASSERT(squareOnBoard(FROM(move)));
+    ASSERT(squareOnBoard(TOSQ(move)));
+
     list -> moves[list -> numberOfMoves].move = move;
+
+    if(position -> searchKillers[0][position -> ply] == move) {
+        list->moves[list->numberOfMoves].score = 900000;
+    }else if(position -> searchKillers[1][position -> ply] == move) {
+        list->moves[list->numberOfMoves].score = 800000;
+    }else {
+        list -> moves[list -> numberOfMoves].score = position -> searchHistory[position -> pieces[FROM(move)]][TOSQ(move)];
+    }
+
     list -> moves[list -> numberOfMoves].score = 0;
     list -> numberOfMoves++;
 }
 
 static void addCapturedMove(const board *position, int move, movelist *list) {
+    ASSERT(squareOnBoard(FROM(move)));
+    ASSERT(squareOnBoard(TOSQ(move)));
+    ASSERT(pieceValidate(CAPTURED(move)));
+
     list -> moves[list -> numberOfMoves].move = move;
-    list -> moves[list -> numberOfMoves].score = 0;
+    list -> moves[list -> numberOfMoves].score = MVV_LVA_Scores[CAPTURED(move)][position -> pieces[FROM(move)]] + 1000000;
     list -> numberOfMoves++;
 }
 
 static void addEnPassantMove(const board *position, int move, movelist *list) {
     list -> moves[list -> numberOfMoves].move = move;
-    list -> moves[list -> numberOfMoves].score = 0;
+    list -> moves[list -> numberOfMoves].score = 105 + 1000000;
     list -> numberOfMoves++;
 }
 
@@ -161,11 +194,13 @@ void generateAllMoves(const board *position, movelist *list) {
                 addWhitePwnCaptureMove(position, square, square + 11, position -> pieces[square + 11], list);
             }
 
-            if(square + 9 == position -> isEnPassant) {
-                addCapturedMove(position, MOVE(square, square + 9, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
-            }
-            if(square + 11 == position -> isEnPassant) {
-                addCapturedMove(position, MOVE(square, square + 11, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+            if (position->isEnPassant != NULL_SQUARE) {
+                if (square + 9 == position->isEnPassant) {
+                    addEnPassantMove(position, MOVE(square, square + 9, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+                }
+                if (square + 11 == position->isEnPassant) {
+                    addEnPassantMove(position, MOVE(square, square + 11, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+                }
             }
         }
 
@@ -204,11 +239,13 @@ void generateAllMoves(const board *position, movelist *list) {
                 addBlackPwnCaptureMove(position, square, square - 11, position -> pieces[square - 11], list);
             }
 
-            if(square - 9 == position -> isEnPassant) {
-                addCapturedMove(position, MOVE(square, square - 9, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
-            }
-            if(square - 11 == position -> isEnPassant) {
-                addCapturedMove(position, MOVE(square, square - 11, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+            if (position->isEnPassant != NULL_SQUARE) {
+                if (square - 9 == position->isEnPassant) {
+                    addEnPassantMove(position, MOVE(square, square - 9, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+                }
+                if (square - 11 == position->isEnPassant) {
+                    addEnPassantMove(position, MOVE(square, square - 11, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+                }
             }
         }
 
@@ -285,6 +322,126 @@ void generateAllMoves(const board *position, movelist *list) {
                     continue;
                 }
                 addQuietMove(position, MOVE(square, targetSquare, EMPTY_SQR, EMPTY_SQR, 0), list);
+            }
+        }
+
+        piece = loopNonSlidePieces[pieceIndex++];
+    }
+
+}
+
+void generateAllCaptures(const board* position, movelist* list) {
+    ASSERT(checkBoard(position));
+
+    list->numberOfMoves = 0;
+
+    int piece = EMPTY_SQR;
+    int boardSide = position->boardSide;
+    int square = 0;
+    int targetSquare = 0;
+    int pieceNumber = 0;
+    int direction = 0;
+    int index = 0;
+    int pieceIndex = 0;
+
+    if (boardSide == WHITE) {
+        for (pieceNumber = 0; pieceNumber < position->numberOfPieces[whitePwn]; pieceNumber++) {
+            square = position->pieceList[whitePwn][pieceNumber];
+            ASSERT(squareOnBoard(square));
+
+            if (!squareOffboard(square + 9) && pieceColor[position->pieces[square + 9]] == BLACK) {
+                addWhitePwnCaptureMove(position, square, square + 9, position->pieces[square + 9], list);
+            }
+            if (!squareOffboard(square + 11) && pieceColor[position->pieces[square + 11]] == BLACK) {
+                addWhitePwnCaptureMove(position, square, square + 11, position->pieces[square + 11], list);
+            }
+
+            if (position->isEnPassant != NULL_SQUARE) {
+                if (square + 9 == position->isEnPassant) {
+                    addEnPassantMove(position, MOVE(square, square + 9, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+                }
+                if (square + 11 == position->isEnPassant) {
+                    addEnPassantMove(position, MOVE(square, square + 11, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+                }
+            }
+        }
+    }
+    else {
+        for (pieceNumber = 0; pieceNumber < position->numberOfPieces[blackPwn]; pieceNumber++) {
+            square = position->pieceList[blackPwn][pieceNumber];
+            ASSERT(squareOnBoard(square));
+
+            if (!squareOffboard(square - 9) && pieceColor[position->pieces[square - 9]] == WHITE) {
+                addBlackPwnCaptureMove(position, square, square - 9, position->pieces[square - 9], list);
+            }
+            if (!squareOffboard(square - 11) && pieceColor[position->pieces[square - 11]] == WHITE) {
+                addBlackPwnCaptureMove(position, square, square - 11, position->pieces[square - 11], list);
+            }
+
+            if (position->isEnPassant != NULL_SQUARE) {
+                if (square - 9 == position->isEnPassant) {
+                    addEnPassantMove(position, MOVE(square, square - 9, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+                }
+                if (square - 11 == position->isEnPassant) {
+                    addEnPassantMove(position, MOVE(square, square - 11, EMPTY_SQR, EMPTY_SQR, MOVEFLAG_EnPassant), list);
+                }
+            }
+        }
+    }
+
+    pieceIndex = loopSlideIndex[boardSide];
+    piece = loopSlidePieces[pieceIndex++];
+
+    while (piece != 0) {
+        ASSERT(pieceValidate(piece));
+
+        for (pieceNumber = 0; pieceNumber < position->numberOfPieces[piece]; pieceNumber++) {
+            square = position->pieceList[piece][pieceNumber];
+            ASSERT(squareOnBoard(square));
+
+            for (index = 0; index < numberOfDirections[piece]; index++) {
+                direction = pieceDirection[piece][index];
+                targetSquare = square + direction;
+
+                while (!squareOffboard(targetSquare)) {
+                    if (position->pieces[targetSquare] != EMPTY_SQR) {
+                        if (pieceColor[position->pieces[targetSquare]] == boardSide ^ 1) {
+                            addCapturedMove(position, MOVE(square, targetSquare, position->pieces[targetSquare], EMPTY_SQR, 0), list);
+                        }
+                        break;
+                    }
+                    targetSquare += direction;
+                }
+            }
+        }
+
+        piece = loopSlidePieces[pieceIndex++];
+    }
+
+    pieceIndex = loopNonSlideIndex[boardSide];
+    piece = loopNonSlidePieces[pieceIndex++];
+
+    while (piece != 0) {
+        ASSERT(pieceValidate(piece));
+
+        for (pieceNumber = 0; pieceNumber < position->numberOfPieces[piece]; pieceNumber++) {
+            square = position->pieceList[piece][pieceNumber];
+            ASSERT(squareOnBoard(square));
+
+            for (index = 0; index < numberOfDirections[piece]; index++) {
+                direction = pieceDirection[piece][index];
+                targetSquare = square + direction;
+
+                if (squareOffboard(targetSquare)) {
+                    continue;
+                }
+
+                if (position->pieces[targetSquare] != EMPTY_SQR) {
+                    if (pieceColor[position->pieces[targetSquare]] == boardSide ^ 1) {
+                        addCapturedMove(position, MOVE(square, targetSquare, position->pieces[targetSquare], EMPTY_SQR, 0), list);
+                    }
+                    continue;
+                }
             }
         }
 
