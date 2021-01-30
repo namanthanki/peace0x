@@ -294,6 +294,7 @@ extern int parseFEN(char *fen, board *position);
 extern void printBoard(const board *position);
 extern void updateListsMaterial(board *position);
 extern int checkBoard(const board *position);
+extern board* generateBoard();
 
 /***********||
 ----attack.c||
@@ -315,7 +316,9 @@ extern int parseMove(char *ptrChar, board *position);
 **************/
 
 extern void generateAllMoves(const board *position, movelist *list);
+extern void generateAllCaptures(const board* position, movelist* list);
 extern int moveExists(board *position, const int move);
+extern void init_MVV_LVA();
 
 /*************||
 ----makeMove.c||
@@ -341,6 +344,7 @@ extern void searchPosition(board *position, searchInfo *info);
 ************/
 
 extern int getTimeInMiliseconds();
+extern void readInput(searchInfo* info);
 
 /************||
 ----pvtable.c||
@@ -356,6 +360,16 @@ extern void clearPvTable(pvTable *table);
 ----pvtable.c||
 **************/
 
+/*************||
+----evaluate.c||
+***************/
+
 extern int evaluatePosition(const board *position);
+
+/********||
+----uci.c||
+**********/
+
+extern void uciLoop();
 
 #endif
