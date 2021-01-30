@@ -97,4 +97,5 @@ void allInit() {
     initializeBitMasks();
     initHashKeys();
     initFilesRanksBoard();
+    init_MVV_LVA();
 }
