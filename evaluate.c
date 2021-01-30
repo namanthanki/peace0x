@@ -75,7 +75,7 @@ int evaluatePosition(const board *position) {
     for(pieceNumber = 0; pieceNumber < position -> numberOfPieces[piece]; pieceNumber++) {
         square = position -> pieceList[piece][pieceNumber];
         ASSERT(squareOnBoard(square));
-        score -= pawnTable[MIRROR64(square)];
+        score -= pawnTable[MIRROR64(toSQUARE64(square))];
     }
 
     piece = whiteKnight;
@@ -89,7 +89,7 @@ int evaluatePosition(const board *position) {
     for(pieceNumber = 0; pieceNumber < position -> numberOfPieces[piece]; pieceNumber++) {
         square = position -> pieceList[piece][pieceNumber];
         ASSERT(squareOnBoard(square));
-        score -= knightTable[MIRROR64(square)];
+        score -= knightTable[MIRROR64(toSQUARE64(square))];
     }
 
     piece = whiteBishop;
@@ -103,7 +103,7 @@ int evaluatePosition(const board *position) {
     for(pieceNumber = 0; pieceNumber < position -> numberOfPieces[piece]; pieceNumber++) {
         square = position -> pieceList[piece][pieceNumber];
         ASSERT(squareOnBoard(square));
-        score -= bishopTable[MIRROR64(square)];
+        score -= bishopTable[MIRROR64(toSQUARE64(square))];
     }
 
     piece = whiteRook;
@@ -117,7 +117,7 @@ int evaluatePosition(const board *position) {
     for(pieceNumber = 0; pieceNumber < position -> numberOfPieces[piece]; pieceNumber++) {
         square = position -> pieceList[piece][pieceNumber];
         ASSERT(squareOnBoard(square));
-        score -= rookTable[MIRROR64(square)];
+        score -= rookTable[MIRROR64(toSQUARE64(square))];
     }
 
     if(position -> boardSide == WHITE) {
