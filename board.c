@@ -310,3 +310,52 @@ void printBoard(const board *position) {
             position -> castlePermission &  bQueenSideCastle   ? 'q' : '-');
     printf("Hash Key: %llx\n", position -> hashKey);
 }
+
+void mirrorBoard(board *position) {
+    int tmpPiecesArray[64];
+    int tmpSide = position -> boardSide ^ 1;
+    int swapPiece[13] = { 
+        EMPTY_SQR, blackPwn, blackKnight, blackBishop, blackRook, blackQueen, blackKing, whitePwn, whiteKnight, whiteBishop, whiteRook, whiteQueen, whiteKing 
+    };
+    int tmpCastlePermission = 0;
+    int tmpIsEnPassant = NULL_SQUARE;
+
+    int square;
+    int tmpPiece;
+
+    if(position -> castlePermission & wKingSideCastle) {
+        tmpCastlePermission |= bKingSideCastle;
+    }
+
+    if(position -> castlePermission & wQueenSideCastle) {
+        tmpCastlePermission |= bQueenSideCastle;
+    }
+
+    if(position -> castlePermission & bKingSideCastle) {
+        tmpCastlePermission |= wKingSideCastle;
+    }
+
+    if(position -> castlePermission & bQueenSideCastle) {
+        tmpCastlePermission |= wQueenSideCastle;
+    }
+
+    for(square = 0; square < 64; square++) {
+        tmpPiecesArray[square] = position -> pieces[toSQUARE120(MIRROR64(square))];
+    }
+
+    resetBoard(position);
+
+    for(square = 0; square < 64; square++) {
+        tmpPiece = swapPiece[tmpPiecesArray[square]];
+        position -> pieces[toSQUARE120(square)] = tmpPiece;
+    }
+
+    position -> boardSide = tmpSide;
+    position -> castlePermission = tmpCastlePermission;
+    position -> isEnPassant = tmpIsEnPassant;
+
+    position -> hashKey = generateHashKey(position);
+
+    updateListsMaterial(position);
+    ASSERT(checkBoard(position));
+}
