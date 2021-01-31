@@ -2,7 +2,7 @@
 #include "include/validate.h"
 
 const int pawnIsolated = -10;
-const int pawnPassed[8] = { 0, 5, 10, 20, 30, 60, 100, 200 };
+const int pawnPassed[8] = { 0, 5, 10, 20, 35, 60, 100, 200 };
 const int rookOpenFile = 10;
 const int rookSemiOpenFile = 5;
 const int queenOpenFile = 5;
@@ -60,14 +60,14 @@ const int kingEndgame[64] = {
       0	,	 10	,	15	,	20	,	20	,	15	,	 10	,	  0	,
       0	,	 10	,	15	,   20	,	20	,	15	,	 10	,	  0	,
       0	,	 10	,	15	,	15	,	15	,	15	,	 10	,	  0	,
-    -10	,	  0	,	20	,	20	,	20	,	20	,	  0	,	-10	,
+    -10	,	  0	,	10	,	10	,	10	,	10	,	  0	,	-10	,
     -50	,	-10	,	 0	,	 0 	,	 0	,	 0	,	-10	,	-50
 };
 
 const int KingOpening[64] = {
       0	,	  5	,	  5	,	-10	,	-10	,	  0	,	 10	,	  5	,
-    -10	,	-10	,	-10	,	-10	,	-10	,	-10	,	-10	,	-10	,
     -30	,	-30	,	-30	,	-30	,	-30	,	-30	,	-30	,	-30	,
+    -50	,	-50	,	-50	,	-50	,	-50	,	-50	,	-50	,	-50	,
     -70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
     -70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
     -70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
@@ -75,12 +75,12 @@ const int KingOpening[64] = {
     -70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70
 };
 
-#define ENDGAME_MATERIAL (1 * pieceValue[whiteRook] + 2 * pieceValue[whiteKnight] + 2 * pieceValue[whitePwn])
+#define ENDGAME_MATERIAL (1 * pieceValue[whiteRook] + 2 * pieceValue[whiteKnight] + 2 * pieceValue[whitePwn] + pieceValue[whiteKing])
 
 int materialDraw(const board *position) {
     if(!position -> numberOfPieces[whiteRook] && !position -> numberOfPieces[blackRook] && !position -> numberOfPieces[whiteQueen] && !position -> numberOfPieces[blackQueen]) {
         if(!position -> numberOfPieces[blackBishop] && !position -> numberOfPieces[whiteBishop]) {
-            if(!position -> numberOfPieces[whiteKnight] < 3 && position -> numberOfPieces[blackKnight] < 3) {
+            if(position -> numberOfPieces[whiteKnight] < 3 && position -> numberOfPieces[blackKnight] < 3) {
                 return TRUE;
             }else if(!position -> numberOfPieces[whiteKnight] && !position -> numberOfPieces[blackKnight]) {
                 if(abs(position -> numberOfPieces[whiteBishop] - position -> numberOfPieces[blackBishop]) < 2) {
@@ -127,12 +127,10 @@ int evaluatePosition(const board *position) {
         score += pawnTable[toSQUARE64(square)];
 
         if((isolatedPwnMask[toSQUARE64(square)] & position -> pawns[WHITE]) == 0)  {
-            //printf("wP Iso: %s\n", printSquareString(square));
             score += pawnIsolated;
         }
 
-        if ((blackPassedMask[toSQUARE64(square)] & position->pawns[BLACK]) == 0) {
-            //printf("wP Passed: %s\n", printSquareString(square));
+        if ((whitePassedMask[toSQUARE64(square)] & position->pawns[BLACK]) == 0) {
             score += pawnPassed[ranksBoard[square]];
         }
     }
@@ -144,12 +142,10 @@ int evaluatePosition(const board *position) {
         score -= pawnTable[MIRROR64(toSQUARE64(square))];
 
         if ((isolatedPwnMask[toSQUARE64(square)] & position->pawns[BLACK]) == 0) {
-            //printf("bP Iso: %s\n", printSquareString(square));
             score -= pawnIsolated;
         }
 
         if((blackPassedMask[toSQUARE64(square)] & position -> pawns[WHITE]) == 0) {
-            //printf("bP Passed: %s\n", printSquareString(square));
             score -= pawnPassed[7 - ranksBoard[square]];
         }
     }
