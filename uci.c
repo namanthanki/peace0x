@@ -115,9 +115,8 @@ void uciLoop() {
 	printf("uciok\n");
 
 	board* position = generateBoard();
-	searchInfo* info;
-	info = (searchInfo*) malloc(sizeof(searchInfo));
-	initPvTable(position -> newPvTable);
+	searchInfo* info = (searchInfo*) malloc(sizeof(searchInfo));
+	initHashTable(position -> hashTable);
 	
 	while (TRUE) {
 		memset(&line[0], 0, sizeof(line));
@@ -155,5 +154,5 @@ void uciLoop() {
 	}
 
 	free(info);
-	free(position -> newPvTable -> pTable);
+	free(position -> hashTable -> pTable);
 }
