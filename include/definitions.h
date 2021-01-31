@@ -208,6 +208,8 @@ typedef struct s_SearchInfo {
 
 #define NOMOVE 0
 
+#define MIRROR64(square) (mirror64[(square)])
+
 /*********||
 ----Macros||
 ***********/
@@ -237,6 +239,12 @@ extern U64Int pieceKeys[13][120];
 extern U64Int sideKey;
 extern U64Int castleKey[16];
 
+extern U64Int fileBitBoardMask[8];
+extern U64Int rankBitBoardMask[8];
+extern U64Int blackPassedMask[64];
+extern U64Int whitePassedMask[64];
+extern U64Int isolatedPwnMask[64];
+
 extern char pieceChar[];
 extern char sideChar[];
 extern char rankChar[]; 
@@ -258,6 +266,8 @@ extern int isPieceRookOrQueen[13];
 extern int isPieceBishopOrQueen[13];
 
 extern int pieceSlides[13];
+
+extern int mirror64[64];
 
 /************||
 ----Functions||
