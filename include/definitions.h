@@ -10,51 +10,53 @@
 ****************/
 
 #define NAME "peace0x 1.1"
-
+//#define DEBUG
 #ifndef DEBUG
 #define ASSERT(n)
 #else
-// #define ASSERT(n) \
-// if(!(n)) { \
-// printf("%s - Failed ", #n); \
-// printf("On %s ", __DATE__); \
-// printf("At %s ", __TIME__); \
-// printf("In File %s ", __FILE__); \
-// printf("At Line %d ", __LINE__); \
-// exit(1);}
-
-#define _ASSERT_TRACE_STR "%s:%d %s: failed with %d\n"
-#define _STRINGIFY(__foo)  # __foo
-
-#define ASSERT_EQ(__a, __b) {                                   \
-    const __typeof__(__a) _x = __a;                             \
-    const __typeof__(__b) _y = __b;                             \
-    const bool __result = _x != _y;                             \
-    const char __what[] = _STRINGIFY(__a) _STRINGIFY(__b);      \
-    if(__result) {                                              \
-        fprintf(stderr, _ASSERT_TRACE_STR,                      \
-                __FILE__, __LINE__, __what, __result);          \
-        exit(-127);                                             \
-    }                                                           \
-}
-
-#define ASSERT(__x) do {                            \
-        __typeof__(__x) result = (__x);             \
-        const char __name[] = #__x;                 \
-        if(!result) {                               \
-            fprintf(stderr,                         \
-                "%s: %d %s: failed with %d\n",       \
-                __FILE__, __LINE__, __name, result);\
-            exit(-127);                             \
-        }                                           \
-    } while(0)
+#define ASSERT(n) \
+if(!(n)) { \
+printf("%s - Failed ", #n); \
+printf("On %s ", __DATE__); \
+printf("At %s ", __TIME__); \
+printf("In File %s ", __FILE__); \
+printf("At Line %d ", __LINE__); \
+exit(1);}
 #endif
+//#define _ASSERT_TRACE_STR "%s:%d %s: failed with %d\n"
+//#define _STRINGIFY(__foo)  # __foo
+
+//#define ASSERT_EQ(__a, __b) {                                   \
+//    const __typeof__(__a) _x = __a;                             \
+//   const __typeof__(__b) _y = __b;                             \
+//    const bool __result = _x != _y;                             \
+//    const char __what[] = _STRINGIFY(__a) _STRINGIFY(__b);      \
+//    if(__result) {                                              \
+//        fprintf(stderr, _ASSERT_TRACE_STR,                      \
+//                __FILE__, __LINE__, __what, __result);          \
+//        exit(-127);                                             \
+//    }                                                           \
+//}
+
+//#define ASSERT(__x) do {                            \
+//        __typeof__(__x) result = (__x);             \
+//        const char __name[] = #__x;                 \
+//        if(!result) {                               \
+//            fprintf(stderr,                         \
+//                "%s: %d %s: failed with %d\n",       \
+//               __FILE__, __LINE__, __name, result);\
+//            exit(-127);                             \
+//        }                                           \
+//    } while(0)
+//#endif
 
 #define SQUARE_NUMBER 120 // Defining maximum squares in an array
 #define MAXGAMEMOVES 2048 // Defining maximum number of half moves of a game, 1024 moves
 #define MAXPOSITIONMOVES 256 // Defining Maximum number of moves expected in a game
 #define MAXDEPTH 64 // Defining maximum depth that movegenerator can reach 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define INFINITE 30000
+#define ISMATE (INFINITE - MAXDEPTH)
 
 /************************||
 ----Data Types Definition||
@@ -110,6 +112,8 @@ enum { wKingSideCastle = 1, wQueenSideCastle = 2, bKingSideCastle = 4, bQueenSid
 
 enum { FALSE, TRUE };
 
+enum { HASH_FLAG_NONE, HASH_FLAG_ALPHA, HASH_FLAG_BETA, HASH_FLAG_EXACT };
+
 /*************||
 ----Structures||
 ***************/
@@ -124,15 +128,22 @@ typedef struct s_MoveList {
     int numberOfMoves;
 } movelist;
 
-typedef struct s_Pventry {
+typedef struct s_hashEntry {
     U64Int hashKey;
     int move;
-} pvEntry;
+    int score;
+    int depth;
+    int flags;
+} hashEntry;
 
-typedef struct s_Pvtable {
-    pvEntry *pTable;
+typedef struct s_hashTable {
+    hashEntry *pTable;
     int numberOfEntries;
-} pvTable;
+    int newWrite;
+    int overWrite;
+    int hit;
+    int cut;
+} hashTable;
 
 typedef struct s_Undo{
     int move;
@@ -169,7 +180,7 @@ typedef struct s_Board {
 
     undo history[MAXGAMEMOVES];
 
-    pvTable newPvTable[1];
+    hashTable hashTable[1];
 
 } board;
 
@@ -336,6 +347,8 @@ extern void init_MVV_LVA();
 
 extern int makeMove(board *position, int move);
 extern void takeMove(board *position);
+extern void makeNullMove(board *position);
+extern void takeNullMove(board *position);
 
 /**********||
 ----perft.c||
@@ -360,11 +373,11 @@ extern void readInput(searchInfo* info);
 ----pvtable.c||
 **************/
 
-extern void initPvTable(pvTable *table);
-extern void storePvMove(const board *position, const int move);
-extern int probePvTable(const board *position);
+extern void initHashTable(hashTable *table);
+extern void storeHashEntry(const board *position, const int move, int score, const int flags, const int depth);
+extern int probeHashEntry(const board *position, int *move, int *score, int alpha, int beta, int depth);
+extern int probePvMove(const board* position);
 extern int getPvLine(const int depth, board *position);
-extern void clearPvTable(pvTable *table);
 
 /************||
 ----pvtable.c||
