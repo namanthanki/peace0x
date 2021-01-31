@@ -1,6 +1,14 @@
 #include "include/definitions.h"
 #include "include/validate.h"
 
+const int pawnIsolated = -10;
+const int pawnPassed[8] = { 0, 5, 10, 20, 30, 60, 100, 200 };
+const int rookOpenFile = 10;
+const int rookSemiOpenFile = 5;
+const int queenOpenFile = 5;
+const int queenSemiOpenFile = 3;
+const int bishopPair = 30;
+
 const int pawnTable[64] = {
     0	,	 0	,	 0	,	  0	,	  0	,	 0	,	 0	,	 0	,
     10	,	10	,	 0	,	-10	,	-10	,	 0	,	10	,	10	,
@@ -45,30 +53,88 @@ const int rookTable[64] = {
      0	,	 0	,	 5	,	10	,	10	,	 5	,	 0	,	 0		
 };
 
-const int mirror64[64] = {
-    56	,	57	,	58	,	59	,	60	,	61	,	62	,	63	,
-    48	,	49	,	50	,	51	,	52	,	53	,	54	,	55	,
-    40	,	41	,	42	,	43	,	44	,	45	,	46	,	47	,
-    32	,	33	,	34	,	35	,	36	,	37	,	38	,	39	,
-    24	,	25	,	26	,	27	,	28	,	29	,	30	,	31	,
-    16	,	17	,	18	,	19	,	20	,	21	,	22	,	23	,
-     8	,	 9	,	10	,	11	,	12	,	13	,	14	,	15	,
-     0	,	 1	,	 2	,	 3	,	 4	,	 5	,	 6	,	 7
+const int kingEndgame[64] = {
+    -50	,	-10	,	0	,	 0	,	 0	,	 0	,	-10	,	-50	,
+    -10 ,	  0	,	10	,	10	,	10	,	10	,	  0	,	-10	,
+      0	,	 10	,	15	,	15	,	15	,	15	,	 10	,	  0	,
+      0	,	 10	,	15	,	20	,	20	,	15	,	 10	,	  0	,
+      0	,	 10	,	15	,   20	,	20	,	15	,	 10	,	  0	,
+      0	,	 10	,	15	,	15	,	15	,	15	,	 10	,	  0	,
+    -10	,	  0	,	20	,	20	,	20	,	20	,	  0	,	-10	,
+    -50	,	-10	,	 0	,	 0 	,	 0	,	 0	,	-10	,	-50
 };
 
-#define MIRROR64(square) (mirror64[(square)])
+const int KingOpening[64] = {
+      0	,	  5	,	  5	,	-10	,	-10	,	  0	,	 10	,	  5	,
+    -10	,	-10	,	-10	,	-10	,	-10	,	-10	,	-10	,	-10	,
+    -30	,	-30	,	-30	,	-30	,	-30	,	-30	,	-30	,	-30	,
+    -70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
+    -70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
+    -70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
+    -70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
+    -70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70
+};
+
+#define ENDGAME_MATERIAL (1 * pieceValue[whiteRook] + 2 * pieceValue[whiteKnight] + 2 * pieceValue[whitePwn])
+
+int materialDraw(const board *position) {
+    if(!position -> numberOfPieces[whiteRook] && !position -> numberOfPieces[blackRook] && !position -> numberOfPieces[whiteQueen] && !position -> numberOfPieces[blackQueen]) {
+        if(!position -> numberOfPieces[blackBishop] && !position -> numberOfPieces[whiteBishop]) {
+            if(!position -> numberOfPieces[whiteKnight] < 3 && position -> numberOfPieces[blackKnight] < 3) {
+                return TRUE;
+            }else if(!position -> numberOfPieces[whiteKnight] && !position -> numberOfPieces[blackKnight]) {
+                if(abs(position -> numberOfPieces[whiteBishop] - position -> numberOfPieces[blackBishop]) < 2) {
+                    return TRUE;
+                }
+            }else if((position -> numberOfPieces[whiteKnight] < 3 && !position -> numberOfPieces[whiteBishop]) || (position -> numberOfPieces[whiteBishop] == 1 && !position -> numberOfPieces[whiteKnight])) {
+                if((position -> numberOfPieces[blackKnight] < 3 && !position -> numberOfPieces[blackBishop]) || (position -> numberOfPieces[blackBishop] == 1 && !position -> numberOfPieces[blackKnight])) {
+                    return TRUE;
+                }
+            }
+        }
+    }else if(!position -> numberOfPieces[whiteQueen] && !position -> numberOfPieces[blackQueen]) {
+        if(position -> numberOfPieces[whiteRook] == 1 && position -> numberOfPieces[blackRook] == 1) {
+            if((position -> numberOfPieces[whiteKnight] + position -> numberOfPieces[blackBishop]) < 2 && (position -> numberOfPieces[blackKnight] + position -> numberOfPieces[blackBishop]) < 2) {
+                return TRUE;
+            }
+        }else if(position -> numberOfPieces[whiteRook] == 1 && !position -> numberOfPieces[blackRook] == 1) {
+            if((position -> numberOfPieces[whiteKnight] + position -> numberOfPieces[whiteBishop] == 0) && (((position -> numberOfPieces[blackKnight] + position -> numberOfPieces[blackBishop]) == 1) || ((position -> numberOfPieces[blackKnight] + position -> numberOfPieces[blackBishop]) == 2))) {
+                return TRUE;
+            }
+        }else if(position->numberOfPieces[blackRook] == 1 && !position->numberOfPieces[whiteRook] == 1) {
+            if((position -> numberOfPieces[blackKnight] + position -> numberOfPieces[blackBishop] == 0) && (((position -> numberOfPieces[whiteKnight] + position -> numberOfPieces[whiteBishop]) == 1) || ((position -> numberOfPieces[whiteKnight] + position -> numberOfPieces[whiteBishop]) == 2))) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
 
 int evaluatePosition(const board *position) {
     int piece;
     int pieceNumber;
     int square;
     int score = position -> material[WHITE] - position -> material[BLACK];
+
+    if(!position -> numberOfPieces[whitePwn] && !position -> numberOfPieces[blackPwn] && materialDraw(position) == TRUE) {
+        return 0;
+    }
     
     piece = whitePwn;
     for(pieceNumber = 0; pieceNumber < position -> numberOfPieces[piece]; pieceNumber++) {
         square = position -> pieceList[piece][pieceNumber];
         ASSERT(squareOnBoard(square));
         score += pawnTable[toSQUARE64(square)];
+
+        if((isolatedPwnMask[toSQUARE64(square)] & position -> pawns[WHITE]) == 0)  {
+            //printf("wP Iso: %s\n", printSquareString(square));
+            score += pawnIsolated;
+        }
+
+        if ((blackPassedMask[toSQUARE64(square)] & position->pawns[BLACK]) == 0) {
+            //printf("wP Passed: %s\n", printSquareString(square));
+            score += pawnPassed[ranksBoard[square]];
+        }
     }
 
     piece = blackPwn;
@@ -76,6 +142,16 @@ int evaluatePosition(const board *position) {
         square = position -> pieceList[piece][pieceNumber];
         ASSERT(squareOnBoard(square));
         score -= pawnTable[MIRROR64(toSQUARE64(square))];
+
+        if ((isolatedPwnMask[toSQUARE64(square)] & position->pawns[BLACK]) == 0) {
+            //printf("bP Iso: %s\n", printSquareString(square));
+            score -= pawnIsolated;
+        }
+
+        if((blackPassedMask[toSQUARE64(square)] & position -> pawns[WHITE]) == 0) {
+            //printf("bP Passed: %s\n", printSquareString(square));
+            score -= pawnPassed[7 - ranksBoard[square]];
+        }
     }
 
     piece = whiteKnight;
@@ -111,6 +187,12 @@ int evaluatePosition(const board *position) {
         square = position -> pieceList[piece][pieceNumber];
         ASSERT(squareOnBoard(square));
         score += rookTable[toSQUARE64(square)];
+
+        if(!(position -> pawns[BOTHCOLORS] & fileBitBoardMask[filesBoard[square]])) {
+            score += rookOpenFile;
+        }else if(!(position -> pawns[WHITE] & fileBitBoardMask[filesBoard[square]])) {
+            score += rookSemiOpenFile;
+        }
     } 
 
     piece = blackRook;
@@ -118,6 +200,63 @@ int evaluatePosition(const board *position) {
         square = position -> pieceList[piece][pieceNumber];
         ASSERT(squareOnBoard(square));
         score -= rookTable[MIRROR64(toSQUARE64(square))];
+
+        if (!(position->pawns[BOTHCOLORS] & fileBitBoardMask[filesBoard[square]])) {
+            score -= rookOpenFile;
+        }
+        else if (!(position->pawns[BLACK] & fileBitBoardMask[filesBoard[square]])) {
+            score -= rookSemiOpenFile;
+        }
+    }
+
+    piece = whiteQueen;
+    for(pieceNumber = 0; pieceNumber < position -> numberOfPieces[piece]; pieceNumber++) {
+        square = position -> pieceList[piece][pieceNumber];
+        ASSERT(squareOnBoard(position));
+
+        if (!(position->pawns[BOTHCOLORS] & fileBitBoardMask[filesBoard[square]])) {
+            score += queenOpenFile;
+        }
+        else if (!(position->pawns[WHITE] & fileBitBoardMask[filesBoard[square]])) {
+            score += queenSemiOpenFile;
+        }
+    }
+
+    piece = blackQueen;
+    for(pieceNumber = 0; pieceNumber < position -> numberOfPieces[piece]; pieceNumber++) {
+        square = position -> pieceList[piece][pieceNumber];
+        ASSERT(squareOnBoard(position));
+
+        if (!(position->pawns[BOTHCOLORS] & fileBitBoardMask[filesBoard[square]])) {
+            score -= queenOpenFile;
+        }
+        else if (!(position->pawns[BLACK] & fileBitBoardMask[filesBoard[square]])) {
+            score -= queenSemiOpenFile;
+        }
+    }
+
+    piece = whiteKing;
+    square = position -> pieceList[piece][0];
+    if(position -> material[BLACK] <= ENDGAME_MATERIAL) {
+        score += kingEndgame[toSQUARE64(square)];
+    }else {
+        score += KingOpening[toSQUARE64(square)];
+    }
+
+    piece = blackKing;
+    square = position -> pieceList[piece][0];
+    if (position -> material[WHITE] <= ENDGAME_MATERIAL) {
+        score -= kingEndgame[MIRROR64(toSQUARE64(square))];
+    }
+    else {
+        score -= KingOpening[MIRROR64(toSQUARE64(square))];
+    }
+    
+    if(position -> numberOfPieces[whiteBishop] >= 2) {
+        score += bishopPair;
+    }
+    if(position -> numberOfPieces[blackBishop] >= 2) {
+        score -= bishopPair;
     }
 
     if(position -> boardSide == WHITE) {
