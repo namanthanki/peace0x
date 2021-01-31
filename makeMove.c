@@ -312,3 +312,50 @@ void takeMove(board *position) {
 
     ASSERT(checkBoard(position));
 }
+
+void makeNullMove(board *position) {
+    ASSERT(checkBoard(position));
+    ASSERT(!inCheck);
+
+    position -> ply++;
+    position -> history[position -> historyPly].hashKey = position -> hashKey;
+
+    if (position->isEnPassant != NULL_SQUARE) {
+        HASH_EN_PASSANT;
+    }
+
+    position -> history[position -> historyPly].move = NOMOVE;
+    position -> history[position -> historyPly].isFiftyMoves = position -> isFiftyMoves;
+    position -> history[position -> historyPly].isEnPassant = position -> isEnPassant;
+    position -> history[position -> historyPly].castlePermission = position -> castlePermission;
+    position -> isEnPassant = NULL_SQUARE;
+
+    position -> boardSide ^= 1;
+    position -> historyPly++;
+    HASH_BOARD_SIDE;
+
+    ASSERT(checkBoard(position));
+}
+
+void takeNullMove(board *position) {
+    ASSERT(checkBoard(position));
+    ASSERT(!inCheck);
+
+    position -> historyPly--;
+    position -> ply--;
+
+    if (position -> isEnPassant != NULL_SQUARE) {
+        HASH_EN_PASSANT;
+    }
+
+    position -> history[position -> historyPly].castlePermission = position -> castlePermission;
+    position -> history[position -> historyPly].isFiftyMoves = position -> isFiftyMoves;
+    position -> history[position -> historyPly].isEnPassant = position -> isEnPassant;
+
+    if (position -> isEnPassant != NULL_SQUARE) {
+        HASH_EN_PASSANT;
+    }
+    
+    position -> boardSide ^= 1;
+    HASH_BOARD_SIDE;
+}
