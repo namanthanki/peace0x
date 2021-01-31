@@ -275,7 +275,7 @@ void resetBoard(board *position) {
 
 board* generateBoard() {
     board* newBoard = (board *) malloc(sizeof(board));
-    newBoard -> newPvTable -> pTable = NULL;
+    newBoard -> hashTable -> pTable = NULL;
     return newBoard;
 }
 
