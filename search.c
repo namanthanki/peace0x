@@ -74,7 +74,7 @@ static int quiescence(int alpha, int beta, board *position, searchInfo *info) {
 
     info -> nodes++;
 
-    if(isRepetition(position) || position -> isFiftyMoves >= 100) {
+    if((isRepetition(position) || position -> isFiftyMoves >= 100) && position -> ply) {
         return 0;
     }
 
@@ -160,6 +160,11 @@ static int alphaBeta(int alpha, int beta, int depth, board *position, searchInfo
         return evaluatePosition(position);
     }
 
+    int inCheck = isSquareAttacked(position -> kingSquare[position -> boardSide], position -> boardSide ^ 1, position);
+    if (inCheck == TRUE) {
+        depth++;
+    }
+
     movelist newList[1];
     generateAllMoves(position, newList);
 
@@ -217,7 +222,7 @@ static int alphaBeta(int alpha, int beta, int depth, board *position, searchInfo
     }
 
     if(legal == 0) {
-        if(isSquareAttacked(position -> kingSquare[position -> boardSide], position -> boardSide ^ 1, position)) {
+        if(inCheck) {
             return -MATE + position -> ply;
         }else {
             return 0;
