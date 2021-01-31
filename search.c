@@ -1,6 +1,4 @@
 #include "include/definitions.h"
-
-#define INFINITE 30000
 #define MATE 29000
 
 static void checkUp(searchInfo *info) {
@@ -56,7 +54,10 @@ static void clearForSearch(board *position, searchInfo *info) {
             position -> searchKillers[index][index2] = 0;
         }
     }
-    clearPvTable(position -> newPvTable);
+    
+    position -> hashTable -> overWrite = 0;
+    position -> hashTable -> hit = 0;
+    position -> hashTable -> cut = 0;
     position -> ply = 0;
 
     info -> stopped = 0;
@@ -99,7 +100,6 @@ static int quiescence(int alpha, int beta, board *position, searchInfo *info) {
     int legal = 0;
     int oldAlpha = alpha;
     int bestMove = NOMOVE;
-    int pvMove = probePvTable(position);
     score = -INFINITE;
 
     for (moveNumber = 0; moveNumber < newList->numberOfMoves; moveNumber++) {
@@ -129,11 +129,6 @@ static int quiescence(int alpha, int beta, board *position, searchInfo *info) {
             bestMove = newList->moves[moveNumber].move;
         }
     }
-
-    if(alpha != oldAlpha) {
-        storePvMove(position, bestMove);
-    }
-
     return alpha;
 }
 
@@ -165,6 +160,27 @@ static int alphaBeta(int alpha, int beta, int depth, board *position, searchInfo
         depth++;
     }
 
+    int score = -INFINITE;
+    int pvMove = NOMOVE;
+
+    if(probeHashEntry(position, &pvMove, &score, alpha, beta, depth) == TRUE) {
+        position -> hashTable -> cut++;
+        return score;
+    }
+
+    if(doNull && !inCheck && position -> ply && (position -> bigPieces[position -> boardSide] >= 2) && depth >= 4) {
+        makeNullMove(position);
+        score = -alphaBeta(-beta, -beta + 1, depth - 4, position, info, FALSE);
+        takeNullMove(position);
+        if(info -> stopped == TRUE) {
+            return 0;
+        }
+        if(score >= beta && abs(score) < ISMATE) {
+            return beta;
+        }
+    }
+
+
     movelist newList[1];
     generateAllMoves(position, newList);
 
@@ -172,8 +188,8 @@ static int alphaBeta(int alpha, int beta, int depth, board *position, searchInfo
     int legal = 0;
     int oldAlpha = alpha;
     int bestMove = NOMOVE;
-    int score = -INFINITE;
-    int pvMove = probePvTable(position);
+    int bestScore = -INFINITE;
+    score = -INFINITE;
 
     if (pvMove != NOMOVE) {
         for(moveNumber = 0; moveNumber < newList -> numberOfMoves; moveNumber++) {
@@ -198,39 +214,44 @@ static int alphaBeta(int alpha, int beta, int depth, board *position, searchInfo
         if (info->stopped == TRUE) {
             return 0;
         }
-
-        if(score > alpha) {
-            if(score >= beta) {
-                if(legal == 1) {
-                    info -> failHighFirst++;
-                }
-                info -> failHigh++;
-
-                if(!(newList -> moves[moveNumber].move & MOVEFLAG_CAPTURED)) {
-                    position -> searchKillers[1][position -> ply] = position -> searchKillers[0][position -> ply];
-                    position -> searchKillers[0][position -> ply] = newList->moves[moveNumber].move;
-                }
-
-                return beta;
-            }
-            alpha = score;
+        if(score > bestScore) {
+            bestScore = score;
             bestMove = newList -> moves[moveNumber].move;
-            if(!(newList -> moves[moveNumber].move & MOVEFLAG_CAPTURED)) {
-                position -> searchHistory[position -> pieces[FROM(bestMove)]][TOSQ(bestMove)] += depth;
+            if (score > alpha) {
+                if (score >= beta) {
+                    if (legal == 1) {
+                        info->failHighFirst++;
+                    }
+                    info->failHigh++;
+
+                    if (!(newList->moves[moveNumber].move & MOVEFLAG_CAPTURED)) {
+                        position->searchKillers[1][position->ply] = position->searchKillers[0][position->ply];
+                        position->searchKillers[0][position->ply] = newList->moves[moveNumber].move;
+                    }
+
+                    storeHashEntry(position, bestMove, beta, HASH_FLAG_BETA, depth);
+                    return beta;
+                }
+                alpha = score;
+                if (!(newList->moves[moveNumber].move & MOVEFLAG_CAPTURED)) {
+                    position->searchHistory[position->pieces[FROM(bestMove)]][TOSQ(bestMove)] += depth;
+                }
             }
         }
     }
 
     if(legal == 0) {
         if(inCheck) {
-            return -MATE + position -> ply;
+            return -INFINITE + position -> ply;
         }else {
             return 0;
         }
     }
 
     if(alpha != oldAlpha) {
-        storePvMove(position, bestMove);
+        storeHashEntry(position, bestMove, bestScore, HASH_FLAG_EXACT, depth);
+    }else {
+        storeHashEntry(position, bestMove, alpha, HASH_FLAG_ALPHA, depth);
     }
 
     return alpha;
