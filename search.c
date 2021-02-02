@@ -138,7 +138,6 @@ static int alphaBeta(int alpha, int beta, int depth, board *position, searchInfo
     if(depth == 0) {
         info -> nodes++;
         return quiescence(alpha, beta, position, info);
-        // return evaluatePosition(position);
     }
 
     if((info -> nodes & 2047) == 0) {
@@ -176,6 +175,7 @@ static int alphaBeta(int alpha, int beta, int depth, board *position, searchInfo
             return 0;
         }
         if(score >= beta && abs(score) < ISMATE) {
+            info -> nullCut++;
             return beta;
         }
     }
