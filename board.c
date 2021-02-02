@@ -339,6 +339,10 @@ void mirrorBoard(board *position) {
         tmpCastlePermission |= wQueenSideCastle;
     }
 
+    if(position -> isEnPassant != NULL_SQUARE) {
+        tmpIsEnPassant = toSQUARE120(MIRROR64(position->isEnPassant));
+    }
+
     for(square = 0; square < 64; square++) {
         tmpPiecesArray[square] = position -> pieces[toSQUARE120(MIRROR64(square))];
     }
