@@ -199,6 +199,7 @@ typedef struct s_SearchInfo {
 
     float failHigh; 
     float failHighFirst;
+    int nullCut;
 } searchInfo;
 
 /************||
