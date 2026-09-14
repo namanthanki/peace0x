@@ -1,52 +1,35 @@
-# SRC=peace0x.c 	\
-# 	init.c 		\
-# 	bitboards.c \
-# 	hashkeys.c 	\
-# 	board.c 	\
-# 	data.c 		\
-# 	attack.c 	\
-# 	io.c 		\
-# 	movegen.c 	\
-# 	validate.c 	\
-# 	makeMove.c 	\
-# 	perft.c		\
-#	search.c	
-	
-SRC=$(wildcard *.c)
-OBJ=$(SRC:%.c=%.o)
+CC = gcc
+CFLAGS ?= -std=c17 -O3 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion -Iinclude
+DEBUG_FLAGS ?= -std=c17 -g -DDEBUG -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wno-sign-conversion -Iinclude
 
-exeext=
+ifeq ($(OS),Windows_NT)
+    EXE = peace0x.exe
+    TEST_EXE = perft_test.exe
+    RM = del /Q /F
+else
+    EXE = peace0x
+    TEST_EXE = perft_test
+    RM = rm -f
+endif
 
-EXE=peace0x$(exeext)
+SRC = $(wildcard src/*.c)
+CORE_SRC = $(filter-out src/main.c, $(SRC))
 
-CC=gcc
-LD=gcc
-CFLAGS=-fPIC  # fPIC makes code position-independent
-CFLAGS_DEBUG=-g
-CDEFS=-DDEBUG
-INCLUDES=-I. -Iinclude
-LIBS=
-LDFLAGS=
-RM=rm -f
+all: $(EXE)
 
-default: $(EXE)
+$(EXE): $(SRC)
+	$(CC) $(CFLAGS) $^ -o $@
 
-$(EXE): $(OBJ)
-	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+debug: $(SRC)
+	$(CC) $(DEBUG_FLAGS) $^ -o $(EXE)
 
-%.o: %.c
-	$(CC) $(CDEFS) $(CFLAGS) $(CFLAGS_DEBUG) $(INCLUDES) -c $< -o $@
+test: $(TEST_EXE)
+	./$(TEST_EXE)
 
+$(TEST_EXE): tests/perft_suite.c $(CORE_SRC)
+	$(CC) $(CFLAGS) $^ -o $@
 
 clean:
-	$(RM) $(OBJ) $(EXE) .deps
+	$(RM) $(EXE) $(TEST_EXE) *.o .deps 2>nul || true
 
-
-deps: .deps
-
-.deps:
-	$(CC) -E -M $(CDEFS) $(INCLUDES) $(SRC) > $@
-
-include .deps
-
-.PHONY: deps clean
+.PHONY: all debug test clean
