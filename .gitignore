@@ -1,5 +1,8 @@
-peace0x
+/peace0x
 *.exe
 *.o
+*.a
 *.d
 .deps
+build/
+out/
